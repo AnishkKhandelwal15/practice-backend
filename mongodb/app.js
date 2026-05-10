@@ -28,264 +28,116 @@ const User = mongoose.model('User', userSchema);
 
 async function runQueryExamples() {
     try {
-        //     // Example queries would go here
+        // 1. CREATE - Save new user
         const newUser = new User({
-            name: 'update khandelwal',
-            email: 'update.doe@example.com',
-            age: 10,
-            isActive: false,
-            tags: ['developer', 'javascript']
+            name: 'Anish Khandelwal',
+            email: 'anish.khandelwal@example.com',
+            age: 25,
+            isActive: true,
+            tags: ['developer', 'javascript', 'nodejs']
         });
+        console.log('\n=== CREATE OPERATION ===');
         console.log('Saving new user:', newUser);
         await newUser.save();
-        console.log('New user saved successfully');
+        console.log('✓ New user saved successfully\n');
 
-        // const findUsers = await User.find({ age: { $lt: 25 } });
-        // console.log('Users found with age < 25:', findUsers);
+        // 2. READ - Find users by age condition
+        console.log('=== READ OPERATIONS ===');
+        const findUsers = await User.find({ age: { $lt: 30 } });
+        console.log('✓ Users found with age < 30:', findUsers.length, 'users\n');
 
-        // const selectfields= await User.find().select('name email -_id');
-        // console.log('Selected fields (name and email):', selectfields);
+        // 3. READ - Select specific fields
+        const selectFields = await User.find().select('name email age');
+        console.log('✓ Selected fields (name, email, age):', selectFields.length, 'users\n');
 
-        // const limitResults = await User.find().limit(2).skip(1);
-        // console.log('Limited results (2 users):', limitResults);
+        // 4. READ - Limit and skip results
+        const limitResults = await User.find().limit(5).skip(0);
+        console.log('✓ Limited results (5 users):', limitResults.length, 'users\n');
 
+        // 5. READ - Count documents
+        const countUsers = await User.countDocuments({ isActive: true });
+        console.log('✓ Count of active users:', countUsers, '\n');
 
-        // const coutnUsers = await User.countDocuments({ isActive: true });
-        // console.log('Count of active users:', coutnUsers);
+        // 6. READ - Find by ID
+        const findById = await User.findById(newUser._id);
+        console.log('✓ Found user by ID:', findById.name, '\n');
 
-        // const deleteUser = await User.findByIdAndDelete( newUser._id );
-        // console.log('Delete result:', deleteUser);
+        // 7. UPDATE - Update using findByIdAndUpdate
+        console.log('=== UPDATE OPERATIONS ===');
+        const updateUser = await User.findByIdAndUpdate(
+            newUser._id,
+            { age: 30 },
+            { new: true }
+        );
+        console.log('✓ Updated user (age changed to 30):', updateUser.age, '\n');
 
+        // 8. UPDATE - Using $set operator
+        const updateWithSet = await User.findByIdAndUpdate(
+            newUser._id,
+            { $set: { isActive: false } },
+            { new: true }
+        );
+        console.log('✓ Updated with $set operator (isActive):', updateWithSet.isActive, '\n');
 
-        const updateUser = await User.findByIdAndUpdate(newUser._id, { age: 30 }, { new: true });
-        console.log('Updated user:', updateUser);
+        // 9. UPDATE - Using $inc operator (increment)
+        const incrementAge = await User.findByIdAndUpdate(
+            newUser._id,
+            { $inc: { age: 5 } },
+            { new: true }
+        );
+        console.log('✓ Incremented age by 5:', incrementAge.age, '\n');
 
+        // 10. UPDATE - Using $push operator (add to array)
+        const addTag = await User.findByIdAndUpdate(
+            newUser._id,
+            { $push: { tags: 'mongodb' } },
+            { new: true }
+        );
+        console.log('✓ Added tag to array:', addTag.tags, '\n');
 
-        // $set
+        // 11. UPDATE - Using $pull operator (remove from array)
+        const removeTag = await User.findByIdAndUpdate(
+            newUser._id,
+            { $pull: { tags: 'javascript' } },
+            { new: true }
+        );
+        console.log('✓ Removed tag from array:', removeTag.tags, '\n');
 
-        // Update field value.
+        // 12. UPDATE - Update multiple documents
+        const updateMultiple = await User.updateMany(
+            { isActive: true },
+            { $set: { isActive: true } }
+        );
+        console.log('✓ Updated multiple documents:', updateMultiple.modifiedCount, 'modified\n');
 
-        // {
-        //   $set: {
-        //     age: 25
-        //   }
-        // }
-        // $unset
+        // 13. QUERY - Using $gt, $gte, $lt, $lte
+        console.log('=== QUERY WITH OPERATORS ===');
+        const ageRange = await User.find({ age: { $gte: 20, $lte: 35 } });
+        console.log('✓ Users with age between 20-35:', ageRange.length, 'users\n');
 
-        // Remove field.
+        // 14. QUERY - Using $in operator
+        const inQuery = await User.find({ age: { $in: [25, 30, 35] } });
+        console.log('✓ Users with age in [25, 30, 35]:', inQuery.length, 'users\n');
 
-        // {
-        //   $unset: {
-        //     age: ""
-        //   }
-        // }
-        // $inc
+        // 15. QUERY - Using $regex for pattern matching
+        const regexQuery = await User.find({ name: { $regex: 'anish', $options: 'i' } });
+        console.log('✓ Users matching name pattern (case-insensitive):', regexQuery.length, 'users\n');
 
-        // Increase/decrease number.
+        // 16. DELETE - Delete user by ID
+        console.log('=== DELETE OPERATIONS ===');
+        const deleteUser = await User.findByIdAndDelete(newUser._id);
+        console.log('✓ Deleted user:', deleteUser.name, '\n');
 
-        // {
-        //   $inc: {
-        //     age: 1
-        //   }
-        // }
-        // $mul
+        // 17. DELETE - Delete multiple documents
+        const deleteMultiple = await User.deleteMany({ isActive: false });
+        console.log('✓ Deleted multiple inactive users:', deleteMultiple.deletedCount, 'deleted\n');
 
-        // Multiply value.
-
-        // {
-        //   $mul: {
-        //     salary: 2
-        //   }
-        // }
-        // $rename
-
-        // Rename field.
-
-        // {
-        //   $rename: {
-        //     name: "fullName"
-        //   }
-        // }
-        // $push
-
-        // Add into array.
-
-        // {
-        //   $push: {
-        //     skills: "React"
-        //   }
-        // }
-        // $pull
-
-        // Remove from array.
-
-        // {
-        //   $pull: {
-        //     skills: "React"
-        //   }
-        // }
-        // $addToSet
-
-        // Adds only if not already present.
-
-        // {
-        //   $addToSet: {
-        //     skills: "Node"
-        //   }
-        // }
-        // $pop
-
-        // Remove first/last array element.
-
-        // {
-        //   $pop: {
-        //     skills: 1
-        //   }
-        // }
-
-        // 1 → remove last
-        // -1 → remove first
-
-        // 2. Comparison Operators
-
-        // Used in queries.
-
-        // $gt
-
-        // Greater than.
-
-        // { age: { $gt: 18 } }
-        // $gte
-
-        // Greater than equal.
-
-        // { age: { $gte: 18 } }
-        // $lt
-
-        // Less than.
-
-        // { age: { $lt: 30 } }
-        // $lte
-
-        // Less than equal.
-
-        // { age: { $lte: 30 } }
-        // $eq
-
-        // Equal.
-
-        // { age: { $eq: 22 } }
-        // $ne
-
-        // Not equal.
-
-        // { age: { $ne: 22 } }
-        // $in
-
-        // Match from array.
-
-        // {
-        //   age: {
-        //     $in: [20, 22]
-        //   }
-        // }
-        // $nin
-
-        // Not in array.
-
-        // {
-        //   age: {
-        //     $nin: [20, 22]
-        //   }
-        // }
-        // 3. Logical Operators
-        // $and
-        // {
-        //   $and: [
-        //     { age: { $gt: 18 } },
-        //     { city: "Delhi" }
-        //   ]
-        // }
-        // $or
-        // {
-        //   $or: [
-        //     { age: 18 },
-        //     { city: "Delhi" }
-        //   ]
-        // }
-        // $not
-        // {
-        //   age: {
-        //     $not: { $gt: 18 }
-        //   }
-        // }
-        // $nor
-        // {
-        //   $nor: [
-        //     { age: 18 },
-        //     { city: "Delhi" }
-        //   ]
-        // }
-        // 4. Element Operators
-        // $exists
-
-        // Checks field existence.
-
-        // {
-        //   age: {
-        //     $exists: true
-        //   }
-        // }
-        // $type
-
-        // Checks BSON type.
-
-        // {
-        //   age: {
-        //     $type: "number"
-        //   }
-        // }
-        // 5. Evaluation Operators
-        // $regex
-
-        // Pattern matching.
-
-        // {
-        //   name: {
-        //     $regex: "^A"
-        //   }
-        // }
-
-        // Names starting with A.
-
-        // $text
-
-        // Text search.
-
-        // {
-        //   $text: {
-        //     $search: "developer"
-        //   }
-        // }
-        // 6. Array Operators
-        // $all
-
-        // Match all values.
-
-        // {
-        //   skills: {
-        //     $all: ["React", "Node"]
-        //   }
-        // }
-        // $size
-
-        // Array length.
-
-        // {
-        //   skills: {
-        //     $size: 2
-        //   }
-        // }
+        // 18. AGGREGATE - Group and count
+        console.log('=== AGGREGATE OPERATIONS ===');
+        const aggregateResult = await User.aggregate([
+            { $group: { _id: '$isActive', count: { $sum: 1 } } }
+        ]);
+        console.log('✓ Users grouped by isActive:', aggregateResult, '\n');
 
 
 
